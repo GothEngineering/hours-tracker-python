@@ -5,6 +5,8 @@ import tkinter
 start_time = time.time()
 current_time = 0
 
+hours_test = "67:23:00"
+
 root = tkinter.Tk()
 root.title("Hours tracker")
 
@@ -33,33 +35,20 @@ def close_app():
     
     hours, remainder = divmod(finished_time, 3600)
     minutes, remainder = divmod(remainder, 60)
+    
     root.destroy()
-
-# The part where it does the writing to the file every 1 second
-#while True:
-    #try:
-        #time.sleep(1)
-
-
-    #except KeyboardInterrupt:
-        #end_time = time.time()
-
-        
-        #finished_time = end_time - start_time
-        #finished_time += float(current_time)
-
-
-        # Writes the final time to the notepad
-        #with open("horas", "w") as f:
-            #f.write(str(finished_time))
-
-        # Study more about divmod i still don't understand this
-        #hours, remainder = divmod(finished_time, 3600)
-        #minutes, remainder = divmod(remainder, 60)
-        #print(f"{int(hours)} hours {int(minutes)} minutes")
-
-        #break
 
 
 root.protocol("WM_DELETE_WINDOW", close_app)
+
+
+# To do: make the hours and minutes appear here dynamically. Find a python thing to do that
+hours_label = tkinter.Label(root, text=f"Time invested: {hours_test}", bg="gray", fg="white")
+hours_label.pack(fill="both", expand=True)
+
+timer_start = tkinter.Button(root, text="Start", width=10, bg="gray")
+timer_start.pack(fill="both", expand=True)
+
+
+
 root.mainloop()
