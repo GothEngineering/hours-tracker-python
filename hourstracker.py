@@ -4,8 +4,7 @@ import tkinter
 
 start_time = time.time()
 current_time = 0
-
-hours_test = "67:23:00"
+hours_label = 0
 
 root = tkinter.Tk()
 root.title("Hours tracker")
@@ -22,8 +21,22 @@ except FileExistsError:
 with open("horas", "r") as f:
     total_hours = f.read()
     current_time = total_hours
-    print(current_time)
+    float_time = float(current_time)
     
+    hours = float_time
+    #hours, remainder = divmod(float_time, 3600)
+    #minutes, remainder = divmod(remainder, 60)
+    hours_label = f"{hours}"
+    
+    print(current_time)    
+
+
+def refresh_data():
+    end_time = time.time()
+    finished_time = end_time - start_time
+    finished_time += float(current_time)
+    
+    hours_label.update()
 
 def close_app():
     end_time = time.time()
@@ -33,22 +46,21 @@ def close_app():
     with open("horas", "w") as f:
         f.write(str(finished_time))
     
-    hours, remainder = divmod(finished_time, 3600)
-    minutes, remainder = divmod(remainder, 60)
-    
+
     root.destroy()
 
 
 root.protocol("WM_DELETE_WINDOW", close_app)
 
 
-# To do: make the hours and minutes appear here dynamically. Find a python thing to do that
-hours_label = tkinter.Label(root, text=f"Time invested: {hours_test}", bg="gray", fg="white")
+
+hours_label = tkinter.Label(root, text=f"Time invested: {hours_label}", bg="gray", fg="white")
 hours_label.pack(fill="both", expand=True)
 
 timer_start = tkinter.Button(root, text="Start", width=10, bg="gray")
 timer_start.pack(fill="both", expand=True)
 
-
+refresh_button = tkinter.Button(root, text="Refresh", width=5, bg="gray", command=refresh_data)
+refresh_button.pack(fill="both", expand=True)
 
 root.mainloop()
