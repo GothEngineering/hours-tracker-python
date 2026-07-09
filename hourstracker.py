@@ -69,6 +69,17 @@ def close_app():
     root.destroy()
 
 
+def auto_save():
+    end_time = time.time()
+    finished_time = end_time - start_time
+    finished_time += float(current_time)
+
+    with open("hours", "w") as f:
+        f.write(str(finished_time))
+    print("oli acabo de empezar el loop de 2 minutitos")
+    root.after(120000, auto_save)
+
+
 root.protocol("WM_DELETE_WINDOW", close_app)
 
 
@@ -77,9 +88,10 @@ ui_label = tkinter.Label(root, text=f"Time invested: {hours_in_the_float} hours,
 ui_label.pack(fill="both", expand=True)
 
 
-refresh_button = tkinter.Button(root, text="Refresh", width=5, bg="gray", command=refresh_data)
+refresh_button = tkinter.Button(root, text="Refresh data", width=5, bg="gray", command=refresh_data)
 refresh_button.pack(fill="both", expand=True)
 
 
 
+root.after(60000, auto_save)
 root.mainloop()
