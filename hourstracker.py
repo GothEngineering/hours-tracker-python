@@ -6,6 +6,7 @@ import customtkinter
 
 root = tkinter.Tk()
 root.title("Hours tracker")
+root.geometry("300x200")
 
 
 class HoursTracker():
@@ -43,16 +44,15 @@ class HoursTracker():
             hours_in_the_float = round(self.hours_label) // 3600
             seconds_without_hours = round(self.hours_label) % 3600
             minutes = seconds_without_hours // 60
+            seconds_modulo = seconds_without_hours % 60
 
-        self.ui_label = tkinter.Label(root, text=f"Time invested: {hours_in_the_float} hours, {minutes} minutes", bg="gray", fg="white")
-        self.ui_label.pack(fill="both", expand=True)
-
-
-        refresh_button = tkinter.Button(root, text="Refresh data", width=5, bg="gray", command=self.refresh_data)
-        refresh_button.pack(fill="both", expand=True)
+        self.ui_label = tkinter.Label(root, text=f"Time invested: {hours_in_the_float} hours, {minutes} minutes, {seconds_modulo} seconds.", 
+                                      bg="gray", fg="white")
+        self.ui_label.pack()
 
 
-    def refresh_data(self):
+
+    def update_ui(self):
         # Please change this global variable for later, it can cause issues (I think)
         global hours_label
 
@@ -68,8 +68,11 @@ class HoursTracker():
         hours_in_the_float = round(hours_label) // 3600
         seconds_without_hours = round(hours_label) % 3600
         minutes = seconds_without_hours // 60
+        seconds_modulo = seconds_without_hours % 60
 
-        self.ui_label.config(text=f"Time invested: {hours_in_the_float} hours, {minutes} minutes")
+        self.ui_label.config(text=f"Time invested: {hours_in_the_float} hours, {minutes} minutes, {seconds_modulo} seconds.")
+
+        test_lmao = root.after(1000, self.update_ui)
         
 
     def close_app(self):
@@ -100,13 +103,6 @@ tracker = HoursTracker()
 
 root.protocol("WM_DELETE_WINDOW", tracker.close_app)
 
-#ui_label = tkinter.Label(root, text=f"Time invested: {tracker.hours_in_the_float} hours, {tracker.minutes} minutes", bg="gray", fg="white")
-#ui_label.pack(fill="both", expand=True)
-
-
-#refresh_button = tkinter.Button(root, text="Refresh data", width=5, bg="gray", command=tracker.refresh_data)
-#refresh_button.pack(fill="both", expand=True)
-
-
+root.after(1000, tracker.update_ui)
 root.after(60000, tracker.auto_save)
 root.mainloop()
