@@ -13,10 +13,22 @@ button_color = "#5c0603"
 
 root.config(bg=background_color)
 
+connection = sqlite3.connect("time_invested.db")
+
+cursor = connection.cursor()
+
+tables_creation = """CREATE TABLE IF NOT EXISTS
+sessions(
+id INTEGER PRIMARY KEY, 
+date TEXT, 
+duration INTEGER
+)"""
+
+cursor.execute(tables_creation)
 
 # TO DO:
-# Lay the groundwork for sqlite3, modernize it into customtkinter
-# eff th belly ache
+# Add a way to track the time invested in a session and then add it to a date 
+# and somehow calculate the time spent in the last two weeks (i know u can do it pal), modernize it into customtkinter
 
 class HoursTracker():
 
