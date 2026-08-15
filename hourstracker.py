@@ -27,8 +27,7 @@ duration INTEGER
 cursor.execute(tables_creation)
 
 # TO DO:
-# Add a way to track the time invested in a session and then add it to a date 
-# and somehow calculate the time spent in the last two weeks (i know u can do it pal), modernize it into customtkinter
+# Modernize it into customtkinter after I finish the database groundwork (which I think it's stable for now)
 
 class HoursTracker():
 
@@ -86,6 +85,19 @@ class HoursTracker():
         self.pause_button = tkinter.Button(root, text="Pause", command=self.pause_timer, bg=button_color)
         self.pause_button.pack()
 
+        # TO DO: make some math thingies to show the average of hours in the past two weeks, so far so good
+        two_weeks_average = "SELECT date, SUM(duration) FROM sessions GROUP BY date ORDER BY date DESC LIMIT 14"
+        cursor.execute(two_weeks_average)
+        last_14_sessions = cursor.fetchmany(14)
+        for average in last_14_sessions:
+            print(average)
+
+        connection.commit()
+        
+
+        # Shove in here the sum of the two weeks to show just once on start up
+        self.average_time_label = customtkinter.CTkLabel(root, text=f"Test!! mreow {average}", bg_color=button_color)
+        self.average_time_label.pack()
 
     def tracking_hours(self):  
 
