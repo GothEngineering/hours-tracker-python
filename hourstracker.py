@@ -48,8 +48,11 @@ class HoursTracker():
         # Variable that stores the total amount paused so the tracker doesn't skip to the present after unpausing it
         self.time_spent_paused = 0
 
-        # Just a check so Python doesn't throw an error 
+        # Check to see if the tracker is paused or not
         self.time_ticking = None
+
+        # Stores the total amount of time in a single session
+        self.session_amount = 0
 
         # Creating a text file if there is not one
         try:
@@ -87,9 +90,11 @@ class HoursTracker():
     def tracking_hours(self):  
 
         if self.is_time_paused:
-            self.time_spent_paused += 1
-            print(self.time_spent_paused)      
+            self.time_spent_paused += 1    
         
+        else:
+            self.session_amount += 1
+            
         # This part here simply updates the time because it does this operation whenever I refresh
         # The finished_time value grows bigger because it adds the latest end_time and it simply adds it up to the current_time variable
         # It substracts the time paused so it doesn't wake up and skips to the boring present
@@ -122,14 +127,13 @@ class HoursTracker():
             self.pause_button.configure(text="Unpause")
             root.after_cancel(self.updating_label)
             
-            print(f"Tengo ahora mismo un {self.time_spent_paused}")
 
         else:
             self.pause_button.configure(text="Pause")
             self.update_ui()
-            print(f"mreow ahora tengo {self.time_spent_paused}")
+            
 
-
+    # Find a way to stop the session from being deleted if the program closes unexpectedly
     def close_app(self):
         end_time = time.time()
         self.finished_time = end_time - self.start_time - self.time_spent_paused
@@ -137,7 +141,14 @@ class HoursTracker():
 
         with open("hours", "w") as f:
             f.write(str(self.finished_time))
-    
+
+        # Remember to use the parentheses to call the function, dummy
+        current_date = datetime.date.today()
+        
+        
+        cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
+        connection.commit()
+        connection.close()
 
         root.destroy()
 
