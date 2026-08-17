@@ -27,7 +27,7 @@ duration INTEGER
 cursor.execute(tables_creation)
 
 # TO DO:
-# Modernize it into customtkinter after I finish the database groundwork (which I think it's stable for now)
+# Modernize it into customtkinter
 
 class HoursTracker():
 
@@ -85,18 +85,19 @@ class HoursTracker():
         self.pause_button = tkinter.Button(root, text="Pause", command=self.pause_timer, bg=button_color)
         self.pause_button.pack()
 
-        # TO DO: make some math thingies to show the average of hours in the past two weeks, so far so good
-        two_weeks_average = "SELECT date, SUM(duration) FROM sessions GROUP BY date ORDER BY date DESC LIMIT 14"
+        # Grabbing the database row to have the two weeks average
+        two_weeks_average = "SELECT SUM(duration) FROM sessions WHERE date >= datetime('now', '-14 days')"
         cursor.execute(two_weeks_average)
-        last_14_sessions = cursor.fetchmany(14)
-        for average in last_14_sessions:
-            print(average)
+        last_14_sessions = cursor.fetchone()[0]
+
+        # Turning the sum of everything into a decimal number
+        hours = round(last_14_sessions / 3600, 1)
 
         connection.commit()
         
 
         # Shove in here the sum of the two weeks to show just once on start up
-        self.average_time_label = customtkinter.CTkLabel(root, text=f"Test!! mreow {average}", bg_color=button_color)
+        self.average_time_label = customtkinter.CTkLabel(root, text=f"Last two weeks average: {hours}", bg_color=button_color)
         self.average_time_label.pack()
 
     def tracking_hours(self):  
