@@ -6,10 +6,20 @@ import sqlite3
 
 root = tkinter.Tk()
 root.title("Hours tracker")
-root.geometry("300x200")
+root.geometry("300x100")
 
-background_color = "#2a2a41"
-button_color = "#5c0603"
+# Purple palette test
+#background_color = "#0e0b12"
+#button_color = "#3a1c42"
+#label_color = "#6a2c6b"
+#color_of_text = "#f2d7f7"
+
+# More professional purple
+background_color = "#1E1E1E"
+button_color = "#3a1c42"
+label_color = "#1E1E1E"
+color_of_text = "#B0B0B0"
+text_font = customtkinter.CTkFont(family="Century Gothic", size=12, weight="bold")
 
 root.config(bg=background_color)
 
@@ -26,8 +36,6 @@ duration INTEGER
 
 cursor.execute(tables_creation)
 
-# TO DO:
-# Modernize it into customtkinter
 
 class HoursTracker():
 
@@ -77,13 +85,17 @@ class HoursTracker():
             minutes = seconds_without_hours // 60
             seconds_modulo = seconds_without_hours % 60
 
-        # Remember to organize these buttons, sorry for the mess
-        self.ui_label = tkinter.Label(root, text=f"Time invested: {hours_in_the_float} hours, {minutes} minutes, {seconds_modulo} seconds.", 
-                                      bg=button_color, fg="white")
-        self.ui_label.pack()
+        # The tracker label
+        self.ui_label = customtkinter.CTkLabel(root, 
+        text=f"Time invested: {hours_in_the_float} hours, {minutes} minutes, {seconds_modulo} seconds.", 
+        bg_color=background_color, fg_color=label_color, text_color=color_of_text, font=text_font)
+        self.ui_label.grid(row=0, column=0, sticky="nsew")
 
-        self.pause_button = tkinter.Button(root, text="Pause", command=self.pause_timer, bg=button_color)
-        self.pause_button.pack()
+        # Pause button
+        self.pause_button = customtkinter.CTkButton(root, 
+        text="Pause", command=self.pause_timer, bg_color=background_color, fg_color=button_color, text_color=color_of_text,
+        font=text_font)
+        self.pause_button.grid(row=2, column=0, sticky="s")
 
         # Grabbing the database row to have the two weeks average
         two_weeks_average = "SELECT SUM(duration) FROM sessions WHERE date >= datetime('now', '-14 days')"
@@ -96,9 +108,15 @@ class HoursTracker():
         connection.commit()
         
 
-        # Shove in here the sum of the two weeks to show just once on start up
-        self.average_time_label = customtkinter.CTkLabel(root, text=f"Last two weeks average: {hours}", bg_color=button_color)
-        self.average_time_label.pack()
+        # Two weeks average label
+        self.average_time_label = customtkinter.CTkLabel(root, 
+        text=f"Last two weeks average: {hours} hours", bg_color=background_color, text_color=color_of_text, fg_color=label_color
+        , font=text_font)
+        self.average_time_label.grid(row=1, column=0, sticky="nsew")
+
+        root.columnconfigure(0, weight=1)
+        root.rowconfigure(0, weight=1)
+
 
     def tracking_hours(self):  
 
@@ -127,7 +145,7 @@ class HoursTracker():
         minutes = seconds_without_hours // 60
         seconds_modulo = seconds_without_hours % 60
 
-        self.ui_label.config(text=f"Time invested: {hours_in_the_float} hours, {minutes} minutes, {seconds_modulo} seconds.")
+        self.ui_label.configure(text=f"Time invested: {hours_in_the_float} hours, {minutes} minutes, {seconds_modulo} seconds.")
 
         self.updating_label = root.after(1000, self.update_ui)
 
@@ -139,14 +157,17 @@ class HoursTracker():
         if self.is_time_paused:
             self.pause_button.configure(text="Unpause")
             root.after_cancel(self.updating_label)
-            
 
+            current_date = datetime.date.today()
+            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
+            connection.commit()
+            
         else:
             self.pause_button.configure(text="Pause")
             self.update_ui()
             
 
-    # Find a way to stop the session from being deleted if the program closes unexpectedly
+    
     def close_app(self):
         end_time = time.time()
         self.finished_time = end_time - self.start_time - self.time_spent_paused
