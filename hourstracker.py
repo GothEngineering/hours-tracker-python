@@ -4,7 +4,7 @@ import tkinter
 import customtkinter
 import sqlite3
 
-root = tkinter.Tk()
+root = customtkinter.CTk()
 root.title("Hours tracker")
 root.geometry("300x100")
 
@@ -61,6 +61,7 @@ class HoursTracker():
         # Stores the total amount of time in a single session
         self.session_amount = 0
 
+        self.hours = 0.0
         # Creating a text file if there is not one
         try:
             with open("hours", "x") as f:
@@ -98,19 +99,23 @@ class HoursTracker():
         self.pause_button.grid(row=2, column=0, sticky="s")
 
         # Grabbing the database row to have the two weeks average
+
         two_weeks_average = "SELECT SUM(duration) FROM sessions WHERE date >= datetime('now', '-14 days')"
         cursor.execute(two_weeks_average)
         last_14_sessions = cursor.fetchone()[0]
 
         # Turning the sum of everything into a decimal number
-        hours = round(last_14_sessions / 3600, 1)
+        if last_14_sessions == None:
+            pass
+        else:
+            self.hours = round(last_14_sessions / 3600, 1)
 
         connection.commit()
         
 
         # Two weeks average label
         self.average_time_label = customtkinter.CTkLabel(root, 
-        text=f"Last two weeks average: {hours} hours", bg_color=background_color, text_color=color_of_text, fg_color=label_color
+        text=f"Last two weeks average: {self.hours} hours", bg_color=background_color, text_color=color_of_text, fg_color=label_color
         , font=text_font)
         self.average_time_label.grid(row=1, column=0, sticky="nsew")
 
