@@ -181,13 +181,16 @@ class HoursTracker():
         with open("hours", "w") as f:
             f.write(str(self.finished_time))
 
-        # Remember to use the parentheses to call the function, dummy
-        current_date = datetime.date.today()
+        if self.is_time_paused == True:
+            print("mreow")
+        else:
+            # Remember to use the parentheses to call the function, dummy
+            current_date = datetime.date.today()
         
         
-        cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
-        connection.commit()
-        connection.close()
+            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
+            connection.commit()
+            connection.close()
 
         root.destroy()
 
