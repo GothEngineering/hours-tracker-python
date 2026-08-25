@@ -26,9 +26,8 @@ This is an hour tracker I made in Python and using tkinter to track how much tim
 
 ### Using the executable:
 
-- Download the latest release, for now it's just Linux
- 
-    *Windows executable coming soon :)*
+- Download the latest release for your OS and run it 
+
 
 ### Running the script:
 
