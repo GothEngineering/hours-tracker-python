@@ -61,7 +61,9 @@ class HoursTracker():
         # Stores the total amount of time in a single session
         self.session_amount = 0
 
-        self.hours = 0.0
+        # Empty variable so the average time can be stored
+        self.rounded_hours = 0.0
+
         # Creating a text file if there is not one
         try:
             with open("hours", "x") as f:
@@ -109,8 +111,9 @@ class HoursTracker():
         if last_14_sessions == None:
             pass
         else:
-            self.hours = self.hours / 14
-            self.hours = round(last_14_sessions / 3600, 1)
+            # Grabbing the average by dividing it with the total
+            avg_seconds = last_14_sessions / 14
+            self.rounded_hours = round(avg_seconds / 3600, 1)
             
 
         connection.commit()
@@ -118,7 +121,7 @@ class HoursTracker():
 
         # Two weeks average label
         self.average_time_label = customtkinter.CTkLabel(root, 
-        text=f"Last two weeks average: {self.hours} hours", bg_color=background_color, text_color=color_of_text, fg_color=label_color
+        text=f"Last two weeks average: {self.rounded_hours} hours", bg_color=background_color, text_color=color_of_text, fg_color=label_color
         , font=text_font)
         self.average_time_label.grid(row=1, column=0, sticky="nsew")
 
@@ -172,11 +175,12 @@ class HoursTracker():
 
             cursor.execute(self.two_weeks_average)
             last_14_sessions = cursor.fetchone()[0]
-            self.hours = self.hours / 14
-            self.hours = round(last_14_sessions / 3600, 1)
+            avg_seconds = last_14_sessions / 14
+            self.rounded_hours = round(avg_seconds / 3600, 1)
+
             connection.commit()
 
-            self.average_time_label.configure(text=f"Last two weeks average: {self.hours} hours")
+            self.average_time_label.configure(text=f"Last two weeks average: {self.rounded_hours} hours")
             
         else:
             self.pause_button.configure(text="Pause")
