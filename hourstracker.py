@@ -5,7 +5,7 @@ import customtkinter
 import sqlite3
 
 root = customtkinter.CTk()
-root.title("Hours tracker")
+root.title("Hours tracker v2.2")
 root.geometry("300x100")
 
 # Purple palette test
@@ -100,15 +100,18 @@ class HoursTracker():
 
         # Grabbing the database row to have the two weeks average
 
-        two_weeks_average = "SELECT SUM(duration) FROM sessions WHERE date >= datetime('now', '-14 days')"
-        cursor.execute(two_weeks_average)
+        self.two_weeks_average = "SELECT SUM(duration) FROM sessions WHERE date >= datetime('now', '-14 days')"
+        cursor.execute(self.two_weeks_average)
         last_14_sessions = cursor.fetchone()[0]
 
         # Turning the sum of everything into a decimal number
+        # This prevents a crash when opening the app for the first time
         if last_14_sessions == None:
             pass
         else:
+            self.hours = self.hours / 14
             self.hours = round(last_14_sessions / 3600, 1)
+            
 
         connection.commit()
         
@@ -166,6 +169,14 @@ class HoursTracker():
             current_date = datetime.date.today()
             cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
             connection.commit()
+
+            cursor.execute(self.two_weeks_average)
+            last_14_sessions = cursor.fetchone()[0]
+            self.hours = self.hours / 14
+            self.hours = round(last_14_sessions / 3600, 1)
+            connection.commit()
+
+            self.average_time_label.configure(text=f"Last two weeks average: {self.hours} hours")
             
         else:
             self.pause_button.configure(text="Pause")
@@ -182,7 +193,7 @@ class HoursTracker():
             f.write(str(self.finished_time))
 
         if self.is_time_paused == True:
-            print("mreow")
+            pass
         else:
             # Remember to use the parentheses to call the function, dummy
             current_date = datetime.date.today()
