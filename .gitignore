@@ -5,3 +5,4 @@ env/
 hours*
 build*
 time_invested.db
+__pycache__
