@@ -19,13 +19,13 @@ class trackerLogic:
 
     def __init__(self):
         # This part grabs the time as soon as it opens the app
-        self.start_time = time.time()
+        self.start_time = time()
 
         # This variable gets filled with the content of the notepad
         self.current_time = 0
 
         # This variable manages the label that shows the hours, it is used to turn the float into time
-        self.hours_label = 0
+        #self.hours_label = 0
 
         # The variable that changes if the pause button is pressed
         self.is_time_paused = False
@@ -40,6 +40,7 @@ class trackerLogic:
         self.session_amount = 0
 
         # Empty variable so the average time can be stored
+        # maybe i have to move this to the UI, let me think
         self.rounded_hours = 0.0
 
         # Creating a text file if there is not one
@@ -57,14 +58,14 @@ class trackerLogic:
             self.current_time = self.total_hours
     
             # This part right here simply turns the text from an string to a float so i can use it for the labels
-            float_time = float(self.current_time)
-            self.hours_label = float_time
+            #float_time = float(self.current_time)
+            #self.hours_label = float_time
     
             # Float into hours and minutes respectively
-            hours_in_the_float = round(self.hours_label) // 3600
-            seconds_without_hours = round(self.hours_label) % 3600
-            minutes = seconds_without_hours // 60
-            seconds_modulo = seconds_without_hours % 60
+            #hours_in_the_float = round(self.hours_label) // 3600
+            #seconds_without_hours = round(self.hours_label) % 3600
+            #minutes = seconds_without_hours // 60
+            #seconds_modulo = seconds_without_hours % 60
 
         # Grabbing the database row to have the two weeks average
 
@@ -82,6 +83,8 @@ class trackerLogic:
             self.rounded_hours = round(avg_seconds / 3600, 1)
 
         connection.commit()
+        #self.root.after(1000, self.tracking_hours)
+        #self.root.after(60000, self.auto_save)
 
 
     def tracking_hours(self):
@@ -95,14 +98,12 @@ class trackerLogic:
         # This part here simply updates the time because it does this operation whenever I refresh
         # The finished_time value grows bigger because it adds the latest end_time and it simply adds it up to the current_time variable
         # It substracts the time paused so it doesn't wake up and skips to the boring present
-        end_time = time.time()
+        end_time = time()
         self.finished_time = end_time - self.start_time - self.time_spent_paused
         self.finished_time += float(self.current_time)
 
         self.time_ticking = self.root.after(1000, self.tracking_hours)
 
-# move the functions for the butttons into UI, and also maybe i should add the database
-# and the label there too.. 
 
     def auto_save(self):
         end_time = time.time()
@@ -113,4 +114,24 @@ class trackerLogic:
             f.write(str(self.finished_time))
     
         self.root.after(120000, self.auto_save)
+
+    def close_app(self):
+        end_time = time.time()
+        self.finished_time = end_time - self.start_time - self.time_spent_paused
+        self.finished_time += float(self.current_time)
+
+        with open("hours", "w") as f:
+            f.write(str(self.finished_time))
+
+        if self.is_time_paused == True:
+            pass
+        else:
+            # Remember to use the parentheses to call the function, dummy
+            current_date = date.today()
         
+        
+            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
+            connection.commit()
+            connection.close()
+
+        self.root.destroy()
