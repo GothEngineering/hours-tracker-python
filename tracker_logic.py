@@ -37,6 +37,10 @@ class trackerLogic:
         # maybe i have to move this to the UI, let me think
         self.rounded_hours = 0.0
 
+        self.hours_in_the_float = 0
+        self.minutes = 0
+        self.seconds_modulo = 0
+
 
         # Creating a text file if there is not one
         try:
@@ -54,7 +58,7 @@ class trackerLogic:
 
 
     
-    def startup(self):
+    def start_db(self):
         # Grabbing the database row to have the two weeks average
 
         self.two_weeks_average = "SELECT SUM(duration) FROM sessions WHERE date >= datetime('now', '-14 days')"
@@ -85,23 +89,22 @@ class trackerLogic:
         self.finished_time = end_time - self.start_time - self.time_spent_paused
         self.finished_time += float(self.current_time)
 
-        
-        #self.time_ticking = self.root.after(1000, self.tracking_hours)
 
-    # Call this function in UI
+
+    # Returns the finished_time to the UI
     def get_finished_time(self):
         return self.finished_time
     
     
+    # Triggers the auto save
     def autosave_logic(self):
-        end_time = time.time()
+        end_time = time()
         self.finished_time = end_time - self.start_time - self.time_spent_paused
         self.finished_time += float(self.current_time)
 
         with open("hours", "w") as f:
             f.write(str(self.finished_time))
     
-        #self.root.after(120000, self.auto_save)
 
     def pause_n_save(self):
             
@@ -117,15 +120,17 @@ class trackerLogic:
             connection.commit()
             return self.rounded_hours
     
-    def close_app(self):
-        end_time = time.time()
+    
+    # Check later if this variable is being properly used, I dont think it is
+    def close_app(self, is_paused):
+        end_time = time()
         self.finished_time = end_time - self.start_time - self.time_spent_paused
         self.finished_time += float(self.current_time)
 
         with open("hours", "w") as f:
             f.write(str(self.finished_time))
 
-        if self.is_time_paused == True:
+        if is_paused == True:
             pass
         else:
             # Remember to use the parentheses to call the function, dummy
@@ -135,5 +140,3 @@ class trackerLogic:
             cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
             connection.commit()
             connection.close()
-
-        #self.root.destroy()

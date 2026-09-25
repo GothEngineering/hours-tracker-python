@@ -29,9 +29,10 @@ class TrackerUI:
 
         self.root.config(bg=background_color)
 
-        start_db = self.logic.startup()
+        start_db = self.logic.start_db()
         self.logic.tracking_hours(self.is_time_paused)
-        
+
+        # Find a way to instantly load these variables so they don't appear as 0 on the start up
         # The tracker label
         self.ui_label = customtkinter.CTkLabel(self.root, 
                                                text=f"Time invested: {self.hours_in_the_float} hours, {self.minutes} minutes, {self.seconds_modulo} seconds.", 
@@ -65,7 +66,9 @@ class TrackerUI:
         self.root.rowconfigure(0, weight=1)
         self.root.after(1000, self.update_ui)
         self.root.after(60000, self.autosave_UI)
-
+        self.repeat_every_sec()
+    
+    
     def update_ui(self):
         self.finished_time = self.logic.get_finished_time()
         # This part is JUST the data that goes into the label, it grabs the finished_time which is the latest value
@@ -92,7 +95,7 @@ class TrackerUI:
     
     
     def close_app(self):
-        self.logic.close_app()
+        self.logic.close_app(self.is_time_paused)
         self.root.destroy()
     
     
@@ -104,8 +107,6 @@ class TrackerUI:
             self.pause_button.configure(text="Unpause")
             self.root.after_cancel(self.updating_label)
             
-            #self.logic.tracking_hours(self.is_time_paused)
-            
             two_weeks_avg = self.logic.pause_n_save()
 
             self.average_time_label.configure(text=f"Last two weeks average: {two_weeks_avg} hours")
@@ -113,4 +114,3 @@ class TrackerUI:
         else:
             self.pause_button.configure(text="Pause")
             self.update_ui()
-            
