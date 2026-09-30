@@ -6,3 +6,5 @@ hours*
 build*
 time_invested.db
 __pycache__
+dist/
+main.spec
