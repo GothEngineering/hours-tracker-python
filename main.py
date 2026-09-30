@@ -1,4 +1,3 @@
-print("Opening main")
 import customtkinter
 import tracker_UI
 

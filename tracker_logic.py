@@ -37,17 +37,13 @@ class trackerLogic:
         # maybe i have to move this to the UI, let me think
         self.rounded_hours = 0.0
 
-        self.hours_in_the_float = 0
-        self.minutes = 0
-        self.seconds_modulo = 0
-
 
         # Creating a text file if there is not one
         try:
             with open("hours", "x") as f:
                 f.write("0")
         except FileExistsError:
-            print("Opening the file")
+            print("File exists, opening it now")
 
 
 
@@ -74,12 +70,7 @@ class trackerLogic:
             self.rounded_hours = round(avg_seconds / 3600, 1)
             return self.rounded_hours
     
-    def start_logic(self):
-        # Reading the notepad so it adds to the current_time variable on start up
-        with open("hours", "r") as f:
-            self.total_hours = f.read()
-            self.current_time = self.total_hours
-    
+
     def tracking_hours(self, is_paused):
         
         if is_paused == True:
@@ -88,9 +79,7 @@ class trackerLogic:
         else:
             self.session_amount += 1
             
-        # This part here simply updates the time because it does this operation whenever I refresh
-        # The finished_time value grows bigger because it adds the latest end_time and it simply adds it up to the current_time variable
-        # It substracts the time paused so it doesn't wake up and skips to the boring present
+        # Grabs the current time, substracts the beginning and the time paused, and adds the current time
         end_time = time()
         self.finished_time = end_time - self.start_time - self.time_spent_paused
         self.finished_time += float(self.current_time)
@@ -120,6 +109,7 @@ class trackerLogic:
             f.write(str(self.finished_time))
     
 
+    # This function purpose is that it saves to the database when pausing. It's different from the UI pause function
     def pause_n_save(self):
             
             current_date = date.today()
@@ -135,7 +125,7 @@ class trackerLogic:
             return self.rounded_hours
     
     
-    # Check later if this variable is being properly used, I dont think it is
+    # Keep an eye on this function, I feel it's wrong somehow
     def close_app(self, is_paused):
         end_time = time()
         self.finished_time = end_time - self.start_time - self.time_spent_paused

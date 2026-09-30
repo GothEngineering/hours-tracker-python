@@ -7,18 +7,11 @@ class TrackerUI:
         self.root = root
 
         self.logic = tracker_logic.trackerLogic()
-        # use a function to return self.hours in the float so this doesn't crashes on Null
-        self.hours_in_the_float = 0
-        self.minutes = 0
-        self.seconds_modulo = 0
+
 
         # The pause variable
         self.is_time_paused = False
         
-        # This variable manages the label that shows the hours, it is used to turn the float into time
-        self.hours_label = 0
-
-        self.finished_time = 0
 
         # Colours
         background_color = "#1E1E1E"
@@ -29,12 +22,17 @@ class TrackerUI:
 
         self.root.config(bg=background_color)
 
+        # Grabs the database and converts it to the two weeks average
         start_db = self.logic.start_db()
-        self.logic.tracking_hours(self.is_time_paused)
-        self.hours1, self.minutes1, self.seconds_modulo1 = self.logic.get_finished_time()
         
-        # Find a way to instantly load these variables so they don't appear as 0 on the start up
+        # Initializes the tracker 
+        self.logic.tracking_hours(self.is_time_paused)
+        
+        # Shoves the time instantly to the label upon starting the app
+        # It has a weird delay on the beginning, fix later oomfie
+        self.hours1, self.minutes1, self.seconds_modulo1 = self.logic.get_finished_time()
 
+        
         # The tracker label
         self.ui_label = customtkinter.CTkLabel(self.root, 
                                                text=f"Time invested: {self.hours1} hours, {self.minutes1} minutes, {self.seconds_modulo1} seconds.", 
@@ -66,11 +64,13 @@ class TrackerUI:
 
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
+        
         self.root.after(1000, self.update_ui)
         self.root.after(60000, self.autosave_UI)
         self.repeat_every_sec()
     
     
+    # The function that updates the UI every second (duuh)
     def update_ui(self):
         self.hours1, self.minutes1, self.seconds_modulo1 = self.logic.get_finished_time()
 
@@ -78,22 +78,26 @@ class TrackerUI:
 
         self.updating_label = self.root.after(1000, self.update_ui)
 
+    
+    # The function that loops to have the tracker working
     def repeat_every_sec(self):
         self.logic.tracking_hours(self.is_time_paused)
         self.time_ticking = self.root.after(1000, self.repeat_every_sec)
     
     
+    # The autosave function
     def autosave_UI(self):
-        print("auto save activated")
         self.logic.autosave_logic()
         self.root.after(120000, self.autosave_UI)
     
     
+    # Self explanatory
     def close_app(self):
         self.logic.close_app(self.is_time_paused)
         self.root.destroy()
     
-    
+
+    # The pause button, it's purpose is to simply change the variable and calling the actual pause function in the logic
     def pause_timer(self):
         self.is_time_paused = not self.is_time_paused
 
@@ -103,7 +107,6 @@ class TrackerUI:
             self.root.after_cancel(self.updating_label)
             
             two_weeks_avg = self.logic.pause_n_save()
-
             self.average_time_label.configure(text=f"Last two weeks average: {two_weeks_avg} hours")
             
         else:
