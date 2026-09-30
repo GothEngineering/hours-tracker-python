@@ -33,6 +33,7 @@ class TrackerUI:
         self.logic.tracking_hours(self.is_time_paused)
 
         # Find a way to instantly load these variables so they don't appear as 0 on the start up
+
         # The tracker label
         self.ui_label = customtkinter.CTkLabel(self.root, 
                                                text=f"Time invested: {self.hours_in_the_float} hours, {self.minutes} minutes, {self.seconds_modulo} seconds.", 

@@ -74,6 +74,12 @@ class trackerLogic:
             self.rounded_hours = round(avg_seconds / 3600, 1)
             return self.rounded_hours
     
+    def start_logic(self):
+        # Reading the notepad so it adds to the current_time variable on start up
+        with open("hours", "r") as f:
+            self.total_hours = f.read()
+            self.current_time = self.total_hours
+    
     def tracking_hours(self, is_paused):
         
         if is_paused == True:
