@@ -31,12 +31,13 @@ class TrackerUI:
 
         start_db = self.logic.start_db()
         self.logic.tracking_hours(self.is_time_paused)
-
+        self.hours1, self.minutes1, self.seconds_modulo1 = self.logic.get_finished_time()
+        
         # Find a way to instantly load these variables so they don't appear as 0 on the start up
 
         # The tracker label
         self.ui_label = customtkinter.CTkLabel(self.root, 
-                                               text=f"Time invested: {self.hours_in_the_float} hours, {self.minutes} minutes, {self.seconds_modulo} seconds.", 
+                                               text=f"Time invested: {self.hours1} hours, {self.minutes1} minutes, {self.seconds_modulo1} seconds.", 
                                                bg_color=background_color, 
                                                fg_color=label_color, 
                                                text_color=color_of_text, 
@@ -71,16 +72,9 @@ class TrackerUI:
     
     
     def update_ui(self):
-        self.finished_time = self.logic.get_finished_time()
-        # This part is JUST the data that goes into the label, it grabs the finished_time which is the latest value
-        # and then it changes the float into hours and minutes
-        self.hours_label = self.finished_time
-        self.hours_in_the_float = round(self.hours_label) // 3600
-        self.seconds_without_hours = round(self.hours_label) % 3600
-        self.minutes = self.seconds_without_hours // 60
-        self.seconds_modulo = self.seconds_without_hours % 60
+        self.hours1, self.minutes1, self.seconds_modulo1 = self.logic.get_finished_time()
 
-        self.ui_label.configure(text=f"Time invested: {self.hours_in_the_float} hours, {self.minutes} minutes, {self.seconds_modulo} seconds.")
+        self.ui_label.configure(text=f"Time invested: {self.hours1} hours, {self.minutes1} minutes, {self.seconds_modulo1} seconds.")
 
         self.updating_label = self.root.after(1000, self.update_ui)
 

@@ -99,7 +99,15 @@ class trackerLogic:
 
     # Returns the finished_time to the UI
     def get_finished_time(self):
-        return self.finished_time
+        # This part is JUST the data that goes into the label, it grabs the finished_time which is the latest value
+        self.hours_label = self.finished_time
+        self.hours_in_the_float = round(self.hours_label) // 3600
+        self.seconds_without_hours = round(self.hours_label) % 3600
+        self.minutes = self.seconds_without_hours // 60
+        self.seconds_modulo = self.seconds_without_hours % 60
+
+        
+        return self.hours_in_the_float, self.minutes, self.seconds_modulo
     
     
     # Triggers the auto save
