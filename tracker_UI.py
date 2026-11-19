@@ -1,5 +1,6 @@
 import customtkinter
 import tracker_logic
+from time import time
 
 class TrackerUI:
     # don't forget the root, dummy
@@ -11,7 +12,8 @@ class TrackerUI:
 
         # The pause variable
         self.is_time_paused = False
-        
+
+        self.time_spent_paused = 0
 
         # Colours
         background_color = "#1E1E1E"
@@ -26,7 +28,7 @@ class TrackerUI:
         start_db = self.logic.start_db()
         
         # Initializes the tracker 
-        self.logic.tracking_hours(self.is_time_paused)
+        self.logic.tracking_hours(self.time_spent_paused)
         
         # Shoves the time instantly to the label upon starting the app
         # It has a weird delay on the beginning, fix later oomfie
@@ -81,7 +83,7 @@ class TrackerUI:
     
     # The function that loops to have the tracker working
     def repeat_every_sec(self):
-        self.logic.tracking_hours(self.is_time_paused)
+        self.logic.tracking_hours(self.time_spent_paused)
         self.time_ticking = self.root.after(1000, self.repeat_every_sec)
     
     
@@ -104,11 +106,15 @@ class TrackerUI:
         
         if self.is_time_paused:
             self.pause_button.configure(text="Unpause")
-            self.root.after_cancel(self.updating_label)
-            
+            self.root.after_cancel(self.updating_label) # Does this even work?
+            self.root.after_cancel(self.time_ticking)
+            self.paused_date = time()
             two_weeks_avg = self.logic.pause_n_save()
             self.average_time_label.configure(text=f"Last two weeks average: {two_weeks_avg} hours")
             
         else:
             self.pause_button.configure(text="Pause")
+            unpaused_date = time()
+            self.time_spent_paused += unpaused_date - self.paused_date
+            self.time_ticking = self.root.after(1000, self.repeat_every_sec)
             self.update_ui()

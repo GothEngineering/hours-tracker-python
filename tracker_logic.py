@@ -28,7 +28,7 @@ class trackerLogic:
         self.time_spent_paused = 0
 
         # Check to see if the tracker is paused or not
-        self.time_ticking = None
+        #self.time_ticking = None
 
         # Stores the total amount of time in a single session
         self.session_amount = 0
@@ -73,15 +73,16 @@ class trackerLogic:
 
     def tracking_hours(self, is_paused):
         
-        if is_paused == True:
-            self.time_spent_paused += 1    
+        #if is_paused == True:
+            #self.time_spent_paused += 1    
         
-        else:
-            self.session_amount += 1
+        #else:
+        #self.session_amount += 1
             
         # Grabs the current time, substracts the beginning and the time paused, and adds the current time
         end_time = time()
-        self.finished_time = end_time - self.start_time - self.time_spent_paused
+        self.finished_time = end_time - self.start_time
+        self.finished_time += self.time_spent_paused
         self.finished_time += float(self.current_time)
 
 
@@ -102,7 +103,8 @@ class trackerLogic:
     # Triggers the auto save
     def autosave_logic(self):
         end_time = time()
-        self.finished_time = end_time - self.start_time - self.time_spent_paused
+        self.finished_time = end_time - self.start_time
+        self.finished_time += self.time_spent_paused
         self.finished_time += float(self.current_time)
 
         with open("hours", "w") as f:
