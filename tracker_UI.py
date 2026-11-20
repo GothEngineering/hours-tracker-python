@@ -116,5 +116,6 @@ class TrackerUI:
             self.pause_button.configure(text="Pause")
             unpaused_date = time()
             self.time_spent_paused += unpaused_date - self.paused_date
+            self.update_ui() # this should have the "updating_label" id?
             self.time_ticking = self.root.after(1000, self.repeat_every_sec)
-            self.update_ui()
+            # current bugs: the timer doesn't remove the paused time when saving

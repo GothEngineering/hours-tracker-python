@@ -24,15 +24,14 @@ class trackerLogic:
         # This variable gets filled with the content of the notepad
         self.current_time = 0
 
-        # Variable that stores the total amount paused so the tracker doesn't skip to the present after unpausing it
+        # Variable that stores the total time paused, this comes from the UI
         self.time_spent_paused = 0
 
-        # Check to see if the tracker is paused or not
-        #self.time_ticking = None
-
         # Stores the total amount of time in a single session
+        # Big issue, this is the variable that tracked the total amount..
+        # So it should be the finished_time instead of the session amount.. i think
         self.session_amount = 0
-
+        
         # Empty variable so the average time can be stored
         # maybe i have to move this to the UI, let me think
         self.rounded_hours = 0.0
@@ -71,21 +70,16 @@ class trackerLogic:
             return self.rounded_hours
     
 
-    def tracking_hours(self, is_paused):
+    def tracking_hours(self, total_paused_time):
         
-        #if is_paused == True:
-            #self.time_spent_paused += 1    
-        
-        #else:
-        #self.session_amount += 1
-            
+        self.time_spent_paused = total_paused_time
         # Grabs the current time, substracts the beginning and the time paused, and adds the current time
         end_time = time()
         self.finished_time = end_time - self.start_time
-        self.finished_time += self.time_spent_paused
+        self.finished_time -= self.time_spent_paused
         self.finished_time += float(self.current_time)
 
-
+        print(f"tiempo total pausado: {self.time_spent_paused}")
 
     # Returns the finished_time to the UI
     def get_finished_time(self):
@@ -104,7 +98,7 @@ class trackerLogic:
     def autosave_logic(self):
         end_time = time()
         self.finished_time = end_time - self.start_time
-        self.finished_time += self.time_spent_paused
+        self.finished_time -= self.time_spent_paused
         self.finished_time += float(self.current_time)
 
         with open("hours", "w") as f:
@@ -130,13 +124,14 @@ class trackerLogic:
     # Keep an eye on this function, I feel it's wrong somehow
     def close_app(self, is_paused):
         end_time = time()
-        self.finished_time = end_time - self.start_time - self.time_spent_paused
+        self.finished_time = end_time - self.start_time
+        self.finished_time -= self.time_spent_paused
         self.finished_time += float(self.current_time)
 
         with open("hours", "w") as f:
             f.write(str(self.finished_time))
 
-        if is_paused == True:
+        if is_paused:
             pass
         else:
             # Remember to use the parentheses to call the function, dummy
