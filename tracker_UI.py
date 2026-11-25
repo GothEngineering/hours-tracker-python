@@ -96,31 +96,35 @@ class TrackerUI:
         self.root.after(120000, self.autosave_UI)
     
     
-    # Self explanatory
+    # The function that starts the function inside logic which closes the app
     def close_app(self):
-        self.logic.close_app(self.is_time_paused)
+        duration = self.time_active()
+        self.logic.close_app(self.is_time_paused, duration)
         self.root.destroy()
     
-    # where would the start_time go? i cannot shove it here
+    # Function that calculates the duration of a session in seconds for the db
     def time_active(self):
         unactived_time = monotonic()
-        self.total_duration = self.unactived_time - self.active_time
+        self.total_duration = unactived_time - self.active_time
+        return self.total_duration
     
     
     # The pause button, it's purpose is to simply change the variable and calling the actual pause function in the logic
     def pause_timer(self):
         self.is_time_paused = not self.is_time_paused
 
-        
         if self.is_time_paused:
             self.pause_button.configure(text="Unpause")
-            self.root.after_cancel(self.updating_label) # Does this even work?
+            
+            # Cancelling the loops
+            self.root.after_cancel(self.updating_label) # Delay here maybe?
             self.root.after_cancel(self.time_ticking)
-            #unactived_time = monotonic()
-            #total_duration = unactived_time - self.active_time
+            
+            # Maybe it'd be better to change time to monotonic but
+            # atleast this way I don't confuse the two. "Future Me" problem
             self.paused_date = time()
-            #function here
-            two_weeks_avg = self.logic.pause_n_save()
+            duration = self.time_active()
+            two_weeks_avg = self.logic.pause_n_save(duration)
             self.average_time_label.configure(text=f"Last two weeks average: {two_weeks_avg} hours")
             
         else:

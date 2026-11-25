@@ -28,16 +28,13 @@ class trackerLogic:
 
         # Variable that stores the total time paused, this comes from the UI
         self.time_spent_paused = 0
-
-        # Stores the total amount of time in a single session
-        # Big issue, this is the variable that tracked the total amount..
-        # So it should be the finished_time instead of the session amount.. i think
-        self.session_amount = 0
         
         # Empty variable so the average time can be stored
         # maybe i have to move this to the UI, let me think
         self.rounded_hours = 0.0
 
+        # test
+        #self.duration = 0
 
         # Creating a text file if there is not one
         try:
@@ -108,11 +105,12 @@ class trackerLogic:
     
 
     # This function purpose is that it saves to the database when pausing. It's different from the UI pause function
+    # The reason I made it separate was to not use the auto save on the db saving
     def pause_n_save(self, total_duration):
             self.duration = total_duration
             
             current_date = date.today()
-            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.duration))
+            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), round(self.duration)))
             connection.commit()
 
             cursor.execute(self.two_weeks_average)
@@ -125,7 +123,8 @@ class trackerLogic:
     
     
     # Keep an eye on this function, I feel it's wrong somehow
-    def close_app(self, is_paused):
+    def close_app(self, is_paused, total_duration):
+        self.duration = total_duration
         end_time = time()
         self.finished_time = end_time - self.start_time
         self.finished_time -= self.time_spent_paused
@@ -141,14 +140,9 @@ class trackerLogic:
             current_date = date.today()
         
         
-            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.duration))
+            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), round(self.duration)))
             connection.commit()
             connection.close()
 
 
-# TO DO: use a function or something to grab total_duration and shove it
-# in the database; ignoring the first time because unactived_time doesn't exist
-# yet. 
-# You are almost there oomfie, total_duration has to go to the database
-# and then i would just need to fix the weird delay on the UI when
-# unpausing and it'll be finished.....
+# TO DO: Fix the weird delay on the UI when unpausing and it'll be finished...
