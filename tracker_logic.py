@@ -1,5 +1,5 @@
 import sqlite3
-from time import time
+from time import time, monotonic
 from datetime import date
 
 connection = sqlite3.connect("time_invested.db")
@@ -20,7 +20,9 @@ class trackerLogic:
     def __init__(self):
         # This part grabs the time as soon as it opens the app
         self.start_time = time()
-
+        # Why monotonic? to not get confused with start_time, duuh
+        #self.active_time = monotonic()
+        
         # This variable gets filled with the content of the notepad
         self.current_time = 0
 
@@ -79,7 +81,7 @@ class trackerLogic:
         self.finished_time -= self.time_spent_paused
         self.finished_time += float(self.current_time)
 
-        print(f"tiempo total pausado: {self.time_spent_paused}")
+
 
     # Returns the finished_time to the UI
     def get_finished_time(self):
@@ -106,10 +108,11 @@ class trackerLogic:
     
 
     # This function purpose is that it saves to the database when pausing. It's different from the UI pause function
-    def pause_n_save(self):
+    def pause_n_save(self, total_duration):
+            self.duration = total_duration
             
             current_date = date.today()
-            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
+            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.duration))
             connection.commit()
 
             cursor.execute(self.two_weeks_average)
@@ -138,6 +141,14 @@ class trackerLogic:
             current_date = date.today()
         
         
-            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
+            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.duration))
             connection.commit()
             connection.close()
+
+
+# TO DO: use a function or something to grab total_duration and shove it
+# in the database; ignoring the first time because unactived_time doesn't exist
+# yet. 
+# You are almost there oomfie, total_duration has to go to the database
+# and then i would just need to fix the weird delay on the UI when
+# unpausing and it'll be finished.....

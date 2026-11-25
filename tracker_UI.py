@@ -1,6 +1,6 @@
 import customtkinter
 import tracker_logic
-from time import time
+from time import time, monotonic
 
 class TrackerUI:
     # don't forget the root, dummy
@@ -15,6 +15,9 @@ class TrackerUI:
 
         self.time_spent_paused = 0
 
+        # SUPER WIP: this PROBABLY should be in logic but I am testing
+        self.active_time = monotonic()
+        
         # Colours
         background_color = "#1E1E1E"
         button_color = "#3a1c42"
@@ -98,7 +101,12 @@ class TrackerUI:
         self.logic.close_app(self.is_time_paused)
         self.root.destroy()
     
-
+    # where would the start_time go? i cannot shove it here
+    def time_active(self):
+        unactived_time = monotonic()
+        self.total_duration = self.unactived_time - self.active_time
+    
+    
     # The pause button, it's purpose is to simply change the variable and calling the actual pause function in the logic
     def pause_timer(self):
         self.is_time_paused = not self.is_time_paused
@@ -108,14 +116,17 @@ class TrackerUI:
             self.pause_button.configure(text="Unpause")
             self.root.after_cancel(self.updating_label) # Does this even work?
             self.root.after_cancel(self.time_ticking)
+            #unactived_time = monotonic()
+            #total_duration = unactived_time - self.active_time
             self.paused_date = time()
+            #function here
             two_weeks_avg = self.logic.pause_n_save()
             self.average_time_label.configure(text=f"Last two weeks average: {two_weeks_avg} hours")
             
         else:
             self.pause_button.configure(text="Pause")
+            self.active_time = monotonic()
             unpaused_date = time()
             self.time_spent_paused += unpaused_date - self.paused_date
             self.update_ui() # this should have the "updating_label" id?
             self.time_ticking = self.root.after(1000, self.repeat_every_sec)
-            # current bugs: the timer doesn't remove the paused time when saving
