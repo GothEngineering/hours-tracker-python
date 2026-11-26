@@ -1,5 +1,5 @@
 import sqlite3
-from time import time, monotonic
+from time import time
 from datetime import date
 
 connection = sqlite3.connect("time_invested.db")
@@ -20,8 +20,6 @@ class trackerLogic:
     def __init__(self):
         # This part grabs the time as soon as it opens the app
         self.start_time = time()
-        # Why monotonic? to not get confused with start_time, duuh
-        #self.active_time = monotonic()
         
         # This variable gets filled with the content of the notepad
         self.current_time = 0
@@ -30,18 +28,16 @@ class trackerLogic:
         self.time_spent_paused = 0
         
         # Empty variable so the average time can be stored
-        # maybe i have to move this to the UI, let me think
+        # maybe I have to move this to the UI (probably)
         self.rounded_hours = 0.0
 
-        # test
-        #self.duration = 0
 
         # Creating a text file if there is not one
         try:
             with open("hours", "x") as f:
                 f.write("0")
         except FileExistsError:
-            print("File exists, opening it now")
+            pass
 
 
 
@@ -59,11 +55,9 @@ class trackerLogic:
         cursor.execute(self.two_weeks_average)
         last_14_sessions = cursor.fetchone()[0]
 
-
-        if last_14_sessions == None:
-            pass
-        else:
-            # Grabbing the average by dividing it with the total
+        
+        # Grabbing the average by dividing it with the total
+        if last_14_sessions is not None:
             avg_seconds = last_14_sessions / 14
             self.rounded_hours = round(avg_seconds / 3600, 1)
             return self.rounded_hours
@@ -104,8 +98,8 @@ class trackerLogic:
             f.write(str(self.finished_time))
     
 
-    # This function purpose is that it saves to the database when pausing. It's different from the UI pause function
-    # The reason I made it separate was to not use the auto save on the db saving
+    # Function that saves the database on pause
+    # to prevent bloating the database with a lot of rows
     def pause_n_save(self, total_duration):
             self.duration = total_duration
             
@@ -121,8 +115,9 @@ class trackerLogic:
             return self.rounded_hours
     
     
-    # Keep an eye on this function, I feel it's wrong somehow
+    # Closing the app function
     def close_app(self, is_paused, total_duration):
+        
         self.duration = total_duration
         end_time = time()
         self.finished_time = end_time - self.start_time
@@ -132,6 +127,7 @@ class trackerLogic:
         with open("hours", "w") as f:
             f.write(str(self.finished_time))
 
+        # Change this later, the if should be doing the code and not the else
         if is_paused:
             pass
         else:
@@ -142,6 +138,3 @@ class trackerLogic:
             cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), round(self.duration)))
             connection.commit()
             connection.close()
-
-
-# TO DO: Fix the weird delay on the UI when unpausing and it'll be finished...
