@@ -117,7 +117,9 @@ class TrackerUI:
             self.pause_button.configure(text="Unpause")
             
             # Cancelling the loops
-            self.root.after_cancel(self.updating_label) # Delay here maybe?
+            # When you pause before updating_label, it throws an attribute error
+            # Make an if block that doesn't do that when it's None or smth
+            self.root.after_cancel(self.updating_label)
             self.root.after_cancel(self.time_ticking)
             
             # Maybe it'd be better to change time to monotonic but
@@ -132,5 +134,5 @@ class TrackerUI:
             self.active_time = monotonic()
             unpaused_date = time()
             self.time_spent_paused += unpaused_date - self.paused_date
-            self.update_ui() # this should have the "updating_label" id?
-            self.time_ticking = self.root.after(1000, self.repeat_every_sec)
+            self.repeat_every_sec()
+            self.update_ui() 

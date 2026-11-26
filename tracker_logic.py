@@ -118,7 +118,6 @@ class trackerLogic:
             avg_seconds = last_14_sessions / 14
             self.rounded_hours = round(avg_seconds / 3600, 1)
 
-            connection.commit()
             return self.rounded_hours
     
     
