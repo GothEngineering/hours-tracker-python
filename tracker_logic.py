@@ -20,21 +20,15 @@ class trackerLogic:
     def __init__(self):
         # This part grabs the time as soon as it opens the app
         self.start_time = time()
-
+        
         # This variable gets filled with the content of the notepad
         self.current_time = 0
 
-        # Variable that stores the total amount paused so the tracker doesn't skip to the present after unpausing it
+        # Variable that stores the total time paused, this comes from the UI
         self.time_spent_paused = 0
-
-        # Check to see if the tracker is paused or not
-        self.time_ticking = None
-
-        # Stores the total amount of time in a single session
-        self.session_amount = 0
-
+        
         # Empty variable so the average time can be stored
-        # maybe i have to move this to the UI, let me think
+        # maybe I have to move this to the UI (probably)
         self.rounded_hours = 0.0
 
 
@@ -43,7 +37,7 @@ class trackerLogic:
             with open("hours", "x") as f:
                 f.write("0")
         except FileExistsError:
-            print("File exists, opening it now")
+            pass
 
 
 
@@ -61,27 +55,21 @@ class trackerLogic:
         cursor.execute(self.two_weeks_average)
         last_14_sessions = cursor.fetchone()[0]
 
-
-        if last_14_sessions == None:
-            pass
-        else:
-            # Grabbing the average by dividing it with the total
+        
+        # Grabbing the average by dividing it with the total
+        if last_14_sessions is not None:
             avg_seconds = last_14_sessions / 14
             self.rounded_hours = round(avg_seconds / 3600, 1)
             return self.rounded_hours
     
 
-    def tracking_hours(self, is_paused):
+    def tracking_hours(self, total_paused_time):
         
-        if is_paused == True:
-            self.time_spent_paused += 1    
-        
-        else:
-            self.session_amount += 1
-            
+        self.time_spent_paused = total_paused_time
         # Grabs the current time, substracts the beginning and the time paused, and adds the current time
         end_time = time()
-        self.finished_time = end_time - self.start_time - self.time_spent_paused
+        self.finished_time = end_time - self.start_time
+        self.finished_time -= self.time_spent_paused
         self.finished_time += float(self.current_time)
 
 
@@ -102,18 +90,21 @@ class trackerLogic:
     # Triggers the auto save
     def autosave_logic(self):
         end_time = time()
-        self.finished_time = end_time - self.start_time - self.time_spent_paused
+        self.finished_time = end_time - self.start_time
+        self.finished_time -= self.time_spent_paused
         self.finished_time += float(self.current_time)
 
         with open("hours", "w") as f:
             f.write(str(self.finished_time))
     
 
-    # This function purpose is that it saves to the database when pausing. It's different from the UI pause function
-    def pause_n_save(self):
+    # Function that saves the database on pause
+    # to prevent bloating the database with a lot of rows
+    def pause_n_save(self, total_duration):
+            self.duration = total_duration
             
             current_date = date.today()
-            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
+            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), round(self.duration)))
             connection.commit()
 
             cursor.execute(self.two_weeks_average)
@@ -121,26 +112,29 @@ class trackerLogic:
             avg_seconds = last_14_sessions / 14
             self.rounded_hours = round(avg_seconds / 3600, 1)
 
-            connection.commit()
             return self.rounded_hours
     
     
-    # Keep an eye on this function, I feel it's wrong somehow
-    def close_app(self, is_paused):
+    # Closing the app function
+    def close_app(self, is_paused, total_duration):
+        
+        self.duration = total_duration
         end_time = time()
-        self.finished_time = end_time - self.start_time - self.time_spent_paused
+        self.finished_time = end_time - self.start_time
+        self.finished_time -= self.time_spent_paused
         self.finished_time += float(self.current_time)
 
         with open("hours", "w") as f:
             f.write(str(self.finished_time))
 
-        if is_paused == True:
+        # Change this later, the if should be doing the code and not the else
+        if is_paused:
             pass
         else:
             # Remember to use the parentheses to call the function, dummy
             current_date = date.today()
         
         
-            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), self.session_amount))
+            cursor.execute("INSERT INTO sessions (date, duration) VALUES (?, ?)", (str(current_date), round(self.duration)))
             connection.commit()
             connection.close()

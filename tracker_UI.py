@@ -1,5 +1,6 @@
 import customtkinter
 import tracker_logic
+from time import time, monotonic
 
 class TrackerUI:
     # don't forget the root, dummy
@@ -11,8 +12,14 @@ class TrackerUI:
 
         # The pause variable
         self.is_time_paused = False
-        
 
+        # Variable that adds up the time paused
+        self.time_spent_paused = 0
+
+        # I suppose it's logical that the UI tracks the time paused
+        # since it is the part that has "eyes" but idk maybe I'll change it
+        self.active_time = monotonic()
+        
         # Colours
         background_color = "#1E1E1E"
         button_color = "#3a1c42"
@@ -25,11 +32,10 @@ class TrackerUI:
         # Grabs the database and converts it to the two weeks average
         start_db = self.logic.start_db()
         
-        # Initializes the tracker 
-        self.logic.tracking_hours(self.is_time_paused)
+        # Initializes the tracker loop
+        self.repeat_every_sec()
         
         # Shoves the time instantly to the label upon starting the app
-        # It has a weird delay on the beginning, fix later oomfie
         self.hours1, self.minutes1, self.seconds_modulo1 = self.logic.get_finished_time()
 
         
@@ -65,12 +71,13 @@ class TrackerUI:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         
-        self.root.after(1000, self.update_ui)
+        self.update_ui()
         self.root.after(60000, self.autosave_UI)
-        self.repeat_every_sec()
     
     
-    # The function that updates the UI every second (duuh)
+    # The function that updates the UI every second
+    # This function needs the function tracking_hours to start first
+    # to grab the finished_time
     def update_ui(self):
         self.hours1, self.minutes1, self.seconds_modulo1 = self.logic.get_finished_time()
 
@@ -79,36 +86,61 @@ class TrackerUI:
         self.updating_label = self.root.after(1000, self.update_ui)
 
     
-    # The function that loops to have the tracker working
+    # Function that makes the tracker work
     def repeat_every_sec(self):
-        self.logic.tracking_hours(self.is_time_paused)
+        self.logic.tracking_hours(self.time_spent_paused)
         self.time_ticking = self.root.after(1000, self.repeat_every_sec)
     
     
-    # The autosave function
+    # The autosave function, it ignores the database to prevent spamming rows
     def autosave_UI(self):
         self.logic.autosave_logic()
         self.root.after(120000, self.autosave_UI)
     
     
-    # Self explanatory
+    # The function that starts the function inside logic which closes the app
     def close_app(self):
-        self.logic.close_app(self.is_time_paused)
+        duration = self.time_active()
+        self.logic.close_app(self.is_time_paused, duration)
         self.root.destroy()
     
-
-    # The pause button, it's purpose is to simply change the variable and calling the actual pause function in the logic
+    
+    # Function that calculates the duration of a session in seconds for the db
+    # TO DO: maybe apply a similar system for the paused function that uses time()
+    # Monotonic looks better
+    def time_active(self):
+        unactived_time = monotonic()
+        self.total_duration = unactived_time - self.active_time
+        return self.total_duration
+    
+    
+    # The pause button. It's purpose is to simply change the variable 
+    # Database saving happens in pause_n_save
     def pause_timer(self):
         self.is_time_paused = not self.is_time_paused
 
-        
         if self.is_time_paused:
             self.pause_button.configure(text="Unpause")
-            self.root.after_cancel(self.updating_label)
             
-            two_weeks_avg = self.logic.pause_n_save()
+            # When you pause before updating_label (aka the first second)
+            # it throws an attribute error, fix later plz
+            # Make an if block that doesn't do that when it's None
+            
+            # Cancelling the loops
+            self.root.after_cancel(self.updating_label)
+            self.root.after_cancel(self.time_ticking)
+            
+            # Maybe it'd be better to change time to monotonic but
+            # atleast this way I don't confuse the two. "Future Me" problem
+            self.paused_date = time()
+            duration = self.time_active()
+            two_weeks_avg = self.logic.pause_n_save(duration)
             self.average_time_label.configure(text=f"Last two weeks average: {two_weeks_avg} hours")
             
         else:
             self.pause_button.configure(text="Pause")
-            self.update_ui()
+            self.active_time = monotonic()
+            unpaused_date = time()
+            self.time_spent_paused += unpaused_date - self.paused_date
+            self.repeat_every_sec()
+            self.update_ui() 
